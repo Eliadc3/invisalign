@@ -1,0 +1,14 @@
+# Ignore virtual environments
+venv/
+env/
+
+# Node modules
+node_modules/
+
+# OS files
+.DS_Store
+
+# Sensitive files
+backend/invisalign1-key.json
+*.env
+.env
