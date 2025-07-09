@@ -12,10 +12,8 @@ from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
-# מזהה תיקיית Google Drive
 DRIVE_FOLDER_ID = '1Wyd36JOHS6X_Id7SI4YpHTUeMnnCFeaz'
 
-# ✅ החזרת כל הנתונים (קשתיות, אירועים, הגדרות)
 @app.route('/sync', methods=['GET'])
 def sync():
     data = {
@@ -25,7 +23,6 @@ def sync():
     }
     return jsonify(data)
 
-# ✅ הוספת אירוע חדש
 @app.route('/event', methods=['POST'])
 def event():
     e = request.json or {}
@@ -33,7 +30,6 @@ def event():
     append_row('Events!A:F', row)
     return jsonify({'status': 'ok'})
 
-# ✅ עדכון הגדרות
 @app.route('/settings', methods=['POST'])
 def update_settings():
     body = request.json or {}
@@ -41,14 +37,12 @@ def update_settings():
     update_settings_data(rows)
     return jsonify({'status': 'saved'})
 
-# ✅ שליחת מייל
 @app.route('/send-email', methods=['POST'])
 def send_mail_endpoint():
     body = request.json or {}
     send_email(body.get('to'), body.get('subject'), body.get('body'))
     return jsonify({'status': 'sent'})
 
-# ✅ שליפת אירועים מסומנים (קשתיות + תורים)
 @app.route('/events')
 def get_events():
     events = []
@@ -69,7 +63,6 @@ def get_events():
 
     return jsonify(events)
 
-# ✅ העלאת תמונה של קשתית ל־Drive + עדכון URL בגיליון
 @app.route('/upload-photo', methods=['POST'])
 def upload_photo():
     file = request.files.get('image')
@@ -109,7 +102,6 @@ def upload_photo():
 
     return jsonify({'url': image_url})
 
-# ✅ /daily-reminder – מופעל ע"י Zapier בהתאם לשעה וסוג התזכורת
 @app.route('/daily-reminder', methods=['GET'])
 def daily_reminder():
     reminder_type = request.args.get('type')
@@ -123,18 +115,18 @@ def daily_reminder():
     for row in events:
         date, type_, title, note, email = row[1:6]
 
-        if reminder_type == 'night' and date == tomorrow and type_ == 'aligner':
+        if reminder_type == 'aligner-tomorrow' and date == tomorrow and type_ == 'aligner':
             subject = 'מחר תחליף קשתית'
-        elif reminder_type == 'morning' and date == today and type_ == 'aligner':
+        elif reminder_type == 'aligner-today' and date == today and type_ == 'aligner':
             subject = 'היום תחליף קשתית'
-        elif reminder_type == 'missed' and type_ == 'aligner':
+        elif reminder_type == 'aligner-missed' and type_ == 'aligner':
             aligner_date = datetime.strptime(date, '%Y-%m-%d')
             missed_date = (aligner_date + timedelta(days=1)).strftime('%Y-%m-%d')
             if missed_date == today:
                 subject = 'שכחת להחליף קשתית אתמול'
             else:
                 continue
-        elif reminder_type == 'doctor' and date == tomorrow and type_ == 'doctor':
+        elif reminder_type == 'doctor-tomorrow' and date == tomorrow and type_ == 'doctor':
             subject = 'תזכורת: תור לרופא מחר'
         elif reminder_type == 'doctor-today' and date == today and type_ == 'doctor':
             subject = 'היום יש לך תור לרופא'
