@@ -110,7 +110,7 @@ def daily_reminder():
 
     today = datetime.now().strftime('%Y-%m-%d')
     tomorrow = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
-    events = get_sheet_data('Events!A2:F')
+    events = get_sheet_data('Events!A2:E')
 
     for row in events:
         # מוודא שיש לפחות 6 עמודות
