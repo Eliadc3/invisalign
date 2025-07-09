@@ -113,20 +113,27 @@ def daily_reminder():
     events = get_sheet_data('Events!A2:F')
 
     for row in events:
+        # מוודא שיש לפחות 6 עמודות
+        if len(row) < 6:
+            continue
+
         date, type_, title, note, email = row[1:6]
 
         if reminder_type == 'aligner-tomorrow' and date == tomorrow and type_ == 'aligner':
             subject = 'מחר תחליף קשתית'
         elif reminder_type == 'aligner-today' and date == today and type_ == 'aligner':
             subject = 'היום תחליף קשתית'
-        elif reminder_type == 'aligner-missed' and type_ == 'aligner':
-            aligner_date = datetime.strptime(date, '%Y-%m-%d')
-            missed_date = (aligner_date + timedelta(days=1)).strftime('%Y-%m-%d')
-            if missed_date == today:
-                subject = 'שכחת להחליף קשתית אתמול'
-            else:
+        elif reminder_type == 'missed' and type_ == 'aligner':
+            try:
+                aligner_date = datetime.strptime(date, '%Y-%m-%d')
+                missed_date = (aligner_date + timedelta(days=1)).strftime('%Y-%m-%d')
+                if missed_date == today:
+                    subject = 'שכחת להחליף קשתית אתמול'
+                else:
+                    continue
+            except ValueError:
                 continue
-        elif reminder_type == 'doctor-tomorrow' and date == tomorrow and type_ == 'doctor':
+        elif reminder_type == 'doctor' and date == tomorrow and type_ == 'doctor':
             subject = 'תזכורת: תור לרופא מחר'
         elif reminder_type == 'doctor-today' and date == today and type_ == 'doctor':
             subject = 'היום יש לך תור לרופא'
@@ -137,6 +144,5 @@ def daily_reminder():
         send_email(email, subject, body)
 
     return jsonify({'status': f'reminders sent for type {reminder_type}'})
-
 if __name__ == '__main__':
     app.run(debug=True)
