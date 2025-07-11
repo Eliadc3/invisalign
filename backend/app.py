@@ -45,23 +45,28 @@ def send_mail_endpoint():
 
 @app.route('/events')
 def get_events():
-    events = []
-    sheet_id = os.environ.get('SHEET_ID')
-    if not sheet_id:
-        return jsonify({"error": "SHEET_ID not defined"}), 500
+    try:
+        events = []
+        sheet_id = os.environ.get('SHEET_ID')
+        if not sheet_id:
+            raise ValueError("SHEET_ID not defined")
 
-    aligner_rows = get_sheet_data('Aligners!A2:D')
-    for row in aligner_rows:
-        if len(row) >= 3:
-            start_date = row[2]
-            events.append({"date": start_date, "type": "aligner"})
+        aligner_rows = get_sheet_data('Aligners!A2:D')
+        for row in aligner_rows:
+            if len(row) >= 3:
+                start_date = row[2]
+                events.append({"date": start_date, "type": "aligner"})
 
-    appointments = get_sheet_data('Appointments!A2:B')
-    for row in appointments:
-        if len(row) >= 1:
-            events.append({"date": row[0], "type": "appointment"})
+        appointments = get_sheet_data('Appointments!A2:B')
+        for row in appointments:
+            if len(row) >= 1:
+                events.append({"date": row[0], "type": "appointment"})
 
-    return jsonify(events)
+        return jsonify(events)
+
+    except Exception as e:
+        print(f"❌ Error in /events: {e}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/upload-photo', methods=['POST'])
 def upload_photo():
