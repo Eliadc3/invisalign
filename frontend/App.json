@@ -1,25 +1,19 @@
 {
   "expo": {
-    "name": "invisalign",
+    "name": "Invisalign",
     "slug": "invisalign",
-    "entrypoint": "./App.js",
     "version": "1.0.0",
+    "sdkVersion": "49.0.0",
     "orientation": "portrait",
+    "icon": "./assets/logo.png",
     "splash": {
-      "image": "./assets/logo.jpeg",
+      "image": "./assets/logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "updates": {
-      "fallbackToCacheTimeout": 0
-    },
-    "assetBundlePatterns": ["**/*"],
-    "ios": {
-      "supportsTablet": true
-    },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#ffffff"
       }
     }
