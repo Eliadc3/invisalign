@@ -51,23 +51,25 @@ def get_events():
         if not sheet_id:
             raise ValueError("SHEET_ID not defined")
 
+        # שליפת קשתיות
         aligner_rows = get_sheet_data('Aligners!A2:D')
         for row in aligner_rows:
             if len(row) >= 3:
                 start_date = row[2]
                 events.append({"date": start_date, "type": "aligner"})
 
-        appointments = get_sheet_data('Appointments!A2:B')
-        for row in appointments:
-            if len(row) >= 1:
-                events.append({"date": row[0], "type": "appointment"})
+        # שליפת תורים וקשתיות מה-Events (זה הגיליון היחיד שצריך)
+        events_rows = get_sheet_data('Events!A2:F')
+        for row in events_rows:
+            if len(row) >= 2:
+                events.append({"date": row[0], "type": row[1]})
 
         return jsonify(events)
 
     except Exception as e:
         print(f"❌ Error in /events: {e}")
         return jsonify({"error": str(e)}), 500
-
+    
 @app.route('/upload-photo', methods=['POST'])
 def upload_photo():
     file = request.files.get('image')
