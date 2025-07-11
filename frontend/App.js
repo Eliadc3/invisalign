@@ -1,13 +1,18 @@
-// frontend/App.js
-
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaView, StyleSheet } from 'react-native';
 import BottomTabNavigator from './src/navigation/BottomTabNavigator';
 
 export default function App() {
   return (
-    <NavigationContainer>
+    <SafeAreaView style={styles.container}>
       <BottomTabNavigator />
-    </NavigationContainer>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+});
