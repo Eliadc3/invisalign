@@ -15,6 +15,12 @@
         "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#ffffff"
       }
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "4e68542c-c4f7-498d-b891-13183b6a9551"
+      }
+    },
+    "owner": "eliadc3"
   }
 }

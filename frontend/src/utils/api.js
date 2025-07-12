@@ -14,7 +14,7 @@ export const getData = async () => {
 
 export const addEvent = async (event) => {
   try {
-    await fetch(`${BASE_URL}/event`, {
+    await fetch(`${BASE_URL}/events`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(event),

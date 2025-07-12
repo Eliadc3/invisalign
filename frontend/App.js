@@ -1,11 +1,9 @@
-// frontend/src/screens/HomeScreen.js
-
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Button, SafeAreaView, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getData } from './src/utils/api.js';
 
-export default function HomeScreen() {
+export default function App() {
   const [secondsToday, setSecondsToday] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [intervalId, setIntervalId] = useState(null);
