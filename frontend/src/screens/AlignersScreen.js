@@ -1,8 +1,7 @@
-// frontend/src/screens/AlignersScreen.js
-
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Image } from 'react-native';
 import { getData } from '../utils/api';
+import PhotoUploader from '../components/PhotoUploader';
 
 export default function AlignersScreen() {
   const [aligners, setAligners] = useState([]);
@@ -21,7 +20,8 @@ export default function AlignersScreen() {
         number: row[2],
         startDate: row[3],
         endDate: row[4],
-        status: row[5],
+        image: row[5] || null,
+        status: row[6] || '',
       }));
       setAligners(parsed);
     } catch (e) {
@@ -37,6 +37,12 @@ export default function AlignersScreen() {
       <Text style={{ fontWeight: 'bold', color: item.status === 'Active' ? 'green' : 'gray' }}>
         {item.status === 'Active' ? 'פעילה' : 'הושלמה'}
       </Text>
+
+      {item.image && (
+        <Image source={{ uri: item.image }} style={styles.image} />
+      )}
+
+      <PhotoUploader alignerId={item.id} />
     </View>
   );
 
@@ -44,7 +50,7 @@ export default function AlignersScreen() {
     <View style={styles.container}>
       <FlatList
         data={aligners}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         ListEmptyComponent={<Text>אין קשתיות להצגה</Text>}
       />
@@ -71,5 +77,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 6,
     writingDirection: 'rtl',
+  },
+  image: {
+    width: '100%',
+    height: 200,
+    marginVertical: 8,
+    borderRadius: 8,
   },
 });

@@ -1,18 +1,20 @@
-# backend/app.py
-
 from flask import Flask, request, jsonify
-from sheets import get_sheet_data, append_row, update_settings_data, update_aligner_image_url
+from sheets import get_sheet_data, append_row, update_settings_data,update_aligner_image_url, get_timer_state, update_timer_state, client
 from mailer import send_email
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google.oauth2 import service_account
+from dotenv import load_dotenv
 import os
 import uuid
 from datetime import datetime, timedelta
 
+# Load environment variables
+load_dotenv()
+
 app = Flask(__name__)
 
-DRIVE_FOLDER_ID = '1Wyd36JOHS6X_Id7SI4YpHTUeMnnCFeaz'
+DRIVE_FOLDER_ID = os.getenv('DRIVE_FOLDER_ID')
 
 @app.route('/sync', methods=['GET'])
 def sync():
@@ -51,14 +53,12 @@ def get_events():
         if not sheet_id:
             raise ValueError("SHEET_ID not defined")
 
-        # שליפת קשתיות
         aligner_rows = get_sheet_data('Aligners!A2:D')
         for row in aligner_rows:
             if len(row) >= 3:
                 start_date = row[2]
                 events.append({"date": start_date, "type": "aligner"})
 
-        # שליפת תורים וקשתיות מה-Events (זה הגיליון היחיד שצריך)
         events_rows = get_sheet_data('Events!A2:F')
         for row in events_rows:
             if len(row) >= 2:
@@ -69,7 +69,70 @@ def get_events():
     except Exception as e:
         print(f"❌ Error in /events: {e}")
         return jsonify({"error": str(e)}), 500
-    
+
+# backend/app.py
+
+@app.route('/update-event', methods=['POST'])
+def update_event():
+    body = request.json
+    if not body or 'id' not in body:
+        return jsonify({'error': 'Missing event ID'}), 400
+
+    sheet_id = os.environ.get('SHEET_ID')
+    if not sheet_id:
+        return jsonify({"error": "SHEET_ID not defined"}), 500
+
+    sheet = client.open_by_key(sheet_id)
+    worksheet = sheet.worksheet("Events")
+    rows = worksheet.get_all_values()
+
+    for idx, row in enumerate(rows):
+        if row and row[0] == str(body['id']):
+            worksheet.update({
+            'range': f'A{idx+1}:F{idx+1}',
+            'values': [
+            [
+                body.get('id', ''),
+                body.get('date', ''),
+                body.get('type', ''),
+                body.get('title', ''),
+                body.get('note', ''),
+                body.get('email', '')
+            ]]})
+            return jsonify({'status': 'updated'})
+
+    return jsonify({'error': 'Event not found'}), 404
+@app.route('/delete-event/<event_id>', methods=['DELETE'])
+def delete_event(event_id):
+    sheet_id = os.environ.get('SHEET_ID')
+    if not sheet_id:
+        return jsonify({"error": "SHEET_ID not defined"}), 500
+
+    sheet = client.open_by_key(sheet_id)
+    worksheet = sheet.worksheet("Events")
+    rows = worksheet.get_all_values()
+
+    for idx, row in enumerate(rows):
+        if row and str(row[0]) == str(event_id):
+            worksheet.delete_rows(idx + 1)
+            return jsonify({'status': 'deleted'})
+
+    return jsonify({'error': 'Event not found'}), 404
+
+@app.route('/update-aligner-status', methods=['POST'])
+def update_aligner_status():
+    data = request.json or {}
+    aligner_id = data.get('alignerId')
+    new_status = data.get('status')
+
+    if not aligner_id or not new_status:
+        return jsonify({'error': 'Missing alignerId or status'}), 400
+
+    from sheets import update_aligner_status
+    update_aligner_status(aligner_id, new_status)
+
+    return jsonify({'status': 'updated'})
+
 @app.route('/upload-photo', methods=['POST'])
 def upload_photo():
     file = request.files.get('image')
@@ -120,7 +183,6 @@ def daily_reminder():
     events = get_sheet_data('Events!A2:E')
 
     for row in events:
-        # מוודא שיש לפחות 6 עמודות
         if len(row) < 6:
             continue
 
@@ -151,5 +213,17 @@ def daily_reminder():
         send_email(email, subject, body)
 
     return jsonify({'status': f'reminders sent for type {reminder_type}'})
+
+@app.route('/timer/status', methods=['GET'])
+def timer_status():
+    state = get_timer_state()
+    return jsonify(state)
+
+@app.route('/timer/update', methods=['POST'])
+def timer_update():
+    data = request.json or {}
+    update_timer_state(data)
+    return jsonify({"status": "updated"})
+
 if __name__ == '__main__':
     app.run(debug=True)

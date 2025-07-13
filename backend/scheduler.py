@@ -18,7 +18,7 @@ def send_reminders():
         return
 
     tomorrow = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
-    events = get_sheet_data(sheet_id=sheet_id, range_='Events!A:F')[1:]
+    events = get_sheet_data(range_='Events!A:F')[1:]
 
     for row in events:
         if len(row) < 6:

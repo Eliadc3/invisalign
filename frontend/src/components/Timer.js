@@ -1,54 +1,73 @@
-// frontend/src/components/Timer.js
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getTimerState, updateTimerState } from '../utils/api';
 
 export default function Timer() {
   const [seconds, setSeconds] = useState(0);
   const [running, setRunning] = useState(false);
   const intervalRef = useRef(null);
+  const startTimeRef = useRef(null);
 
   useEffect(() => {
-    loadTime();
+    loadTimerState();
+    return () => clearInterval(intervalRef.current);
   }, []);
 
-  useEffect(() => {
-    saveTime();
-  }, [seconds]);
-
-  const loadTime = async () => {
+  const loadTimerState = async () => {
     try {
-      const saved = await AsyncStorage.getItem('timer_seconds');
-      if (saved !== null) setSeconds(parseInt(saved));
+      const state = await getTimerState();
+      if (state.status === 'running' && state.startTime) {
+        startTimeRef.current = state.startTime;
+        const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+        setSeconds(elapsed);
+        startInterval(state.startTime);
+        setRunning(true);
+      } else if (state.status === 'paused' && state.startTime && state.pausedTime) {
+        const elapsed = Math.floor((state.pausedTime - state.startTime) / 1000);
+        setSeconds(elapsed);
+        startTimeRef.current = state.startTime;
+        setRunning(false);
+      }
     } catch (e) {
-      console.error('Failed to load time');
+      console.error('Failed to load timer state:', e);
     }
   };
 
-  const saveTime = async () => {
-    try {
-      await AsyncStorage.setItem('timer_seconds', seconds.toString());
-    } catch (e) {
-      console.error('Failed to save time');
-    }
-  };
-
-  const start = () => {
-    setRunning(true);
+  const startInterval = (startTime) => {
+    clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
-      setSeconds(s => s + 1);
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      setSeconds(elapsed);
     }, 1000);
   };
 
-  const pause = () => {
-    setRunning(false);
-    clearInterval(intervalRef.current);
+  const start = async () => {
+    if (running) return;
+    const startTime = Date.now();
+    startTimeRef.current = startTime;
+    setRunning(true);
+    startInterval(startTime);
+    await updateTimerState({ status: 'running', startTime, pausedTime: null });
   };
 
-  const reset = () => {
+  const pause = async () => {
+    if (!running) return;
+    clearInterval(intervalRef.current);
     setRunning(false);
+    const pausedTime = Date.now();
+    await updateTimerState({
+      status: 'paused',
+      startTime: startTimeRef.current,
+      pausedTime,
+    });
+  };
+
+  const reset = async () => {
     clearInterval(intervalRef.current);
     setSeconds(0);
+    setRunning(false);
+    startTimeRef.current = null;
+    await updateTimerState({ status: 'reset', startTime: null, pausedTime: null });
   };
 
   const formatTime = (s) => {
@@ -62,11 +81,11 @@ export default function Timer() {
     <View style={styles.container}>
       <Text style={styles.timerText}>{formatTime(seconds)}</Text>
       {!running ? (
-        <Button title={seconds === 0 ? "Start" : "Resume"} onPress={start} />
+        <Button title={seconds === 0 ? 'התחל' : 'המשך'} onPress={start} />
       ) : (
-        <Button title="Pause" onPress={pause} />
+        <Button title="השהה" onPress={pause} />
       )}
-      <Button title="Reset" onPress={reset} />
+      <Button title="איפוס" onPress={reset} />
     </View>
   );
 }

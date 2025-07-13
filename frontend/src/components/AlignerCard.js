@@ -1,28 +1,37 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, Button } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Image, Button, Alert } from 'react-native';
 import { scheduleAlignerNotifications } from '../utils/notifications';
 import PhotoUploader from '../components/PhotoUploader';
+import { updateAlignerStatus } from '../utils/api';
 
 export default function AlignerCard({ aligner }) {
-    const handleConfirmReplaced = () => {
+    const [status, setStatus] = useState(aligner.status);
+
+    const handleConfirmReplaced = async () => {
+        if (status === 'Completed') {
+            Alert.alert('הקשתית כבר סומנה כהוחלפה');
+            return;
+        }
+
         scheduleAlignerNotifications(aligner, true);
+        await updateAlignerStatus(aligner.id, 'Completed');
+        setStatus('Completed');
+        Alert.alert('הקשתית סומנה כהוחלפה');
     };
 
     return (
         <View style={styles.card}>
             <Text style={styles.title}>{aligner.name}</Text>
             <Text style={styles.dates}>{aligner.startDate} - {aligner.endDate}</Text>
-            <Text style={styles.status}>Status: {aligner.status}</Text>
+            <Text style={[styles.status, { color: status === 'Active' ? 'green' : 'gray' }]}>Status: {status}</Text>
 
-            {/* הצגת תמונה קיימת אם יש */}
             {(aligner.image_url || aligner["Image URL"]) && (
                 <Image
-                    sourceקסןא={{ uri: aligner.image_url || aligner["Image URL"] }}
+                    source={{ uri: aligner.image_url || aligner["Image URL"] }}
                     style={styles.image}
                 />
             )}
 
-            {/* העלאת תמונה תמיד זמינה */}
             <PhotoUploader alignerId={aligner.id} />
 
             {aligner.notes && (
@@ -53,7 +62,6 @@ const styles = StyleSheet.create({
     },
     status: {
         fontSize: 14,
-        color: '#777',
         marginTop: 4
     },
     image: {

@@ -1,5 +1,4 @@
 import * as Notifications from 'expo-notifications';
-import * as Permissions from 'expo-permissions';
 import { Platform } from 'react-native';
 
 export async function requestNotificationPermission() {
@@ -42,25 +41,22 @@ export function scheduleAlignerNotifications(aligner, replaced = false) {
     return dt;
   };
 
-  // Reminder the day before
   scheduleNotification(
-    'Reminder: Change Aligner Tomorrow',
-    `${aligner.name} is due tomorrow.`,
+    'מחר יש להחליף קשתית',
+    `זמן להחליף ל־${aligner.name} מחר ב־20:00`,
     replaceTime(dayBefore, 20, 0)
   );
 
-  // Reminder the same day
   scheduleNotification(
-    'Today: Change Your Aligner',
-    `It's time to change to ${aligner.name}.`,
+    'היום תחליף קשתית',
+    `זה הזמן להחליף ל־${aligner.name}.`,
     replaceTime(endDate, 20, 0)
   );
 
-  // Reminder the day after – only if not replaced
   if (!replaced) {
     scheduleNotification(
-      'You forgot to change aligner?',
-      `Did you switch to ${aligner.name}?`,
+      'האם שכחת להחליף קשתית?',
+      `האם כבר החלפת ל־${aligner.name}?`,
       replaceTime(dayAfter, 6, 0)
     );
   }
@@ -80,14 +76,14 @@ export function scheduleAppointmentNotifications(appointmentDate) {
   };
 
   scheduleNotification(
-    'Reminder: Doctor Appointment Tomorrow',
-    'You have a check-up scheduled tomorrow.',
+    'תזכורת: תור לרופא מחר',
+    'יש לך מחר ביקורת אצל הרופא.',
     replaceTime(dayBefore, 8)
   );
 
   scheduleNotification(
-    'Doctor Appointment Today',
-    'Today is your Invisalign check-up.',
+    'היום יש לך תור לרופא',
+    'היום זה התור שלך לבדיקה אצל הרופא.',
     replaceTime(date, 8)
   );
 }

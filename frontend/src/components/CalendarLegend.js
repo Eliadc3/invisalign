@@ -1,35 +1,40 @@
 // frontend/src/components/CalendarLegend.js
-// מציג מקרא צבעים ליומן (כחול, ירוק, כתום) בצורה ברורה ונגישה
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 export default function CalendarLegend() {
   return (
     <View style={styles.legendContainer}>
-      <Text style={styles.legendItem}><Text style={[styles.dot, { backgroundColor: 'blue' }]} /> Aligner Change</Text>
-      <Text style={styles.legendItem}><Text style={[styles.dot, { backgroundColor: 'green' }]} /> Doctor Appointment</Text>
-      <Text style={styles.legendItem}><Text style={[styles.dot, { backgroundColor: 'orange' }]} /> Note / Other</Text>
+      <View style={styles.legendItem}>
+        <View style={[styles.dot, { backgroundColor: 'blue' }]} />
+        <Text>החלפת קשתית</Text>
+      </View>
+      <View style={styles.legendItem}>
+        <View style={[styles.dot, { backgroundColor: 'green' }]} />
+        <Text>תור לרופא</Text>
+      </View>
+      <View style={styles.legendItem}>
+        <View style={[styles.dot, { backgroundColor: 'orange' }]} />
+        <Text>הערה / אחר</Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   legendContainer: {
-    flexDirection: 'column',
     marginVertical: 12,
     paddingHorizontal: 16
   },
   legendItem: {
-    fontSize: 14,
-    marginVertical: 4,
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
+    marginBottom: 8
   },
   dot: {
     height: 12,
     width: 12,
     borderRadius: 6,
-    marginRight: 8,
-    display: 'inline-block'
+    marginRight: 8
   }
 });

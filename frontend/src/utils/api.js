@@ -1,6 +1,4 @@
-// frontend/src/utils/api.js
-
-const BASE_URL = 'https://invisalign.onrender.com'; // שים לב לעדכן לפי כתובת ה־Render שלך
+import { BASE_URL } from '@env';
 
 export const getData = async () => {
   try {
@@ -12,15 +10,35 @@ export const getData = async () => {
   }
 };
 
+export const getCalendarEvents = async () => {
+  try {
+    const res = await fetch(`${BASE_URL}/events`);
+    return await res.json();
+  } catch (e) {
+    console.error('getCalendarEvents error:', e);
+    return [];
+  }
+};
+
 export const addEvent = async (event) => {
   try {
-    await fetch(`${BASE_URL}/events`, {
+    await fetch(`${BASE_URL}/event`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(event),
     });
   } catch (e) {
     console.error('addEvent error:', e);
+  }
+};
+
+export const deleteEvent = async (eventId) => {
+  try {
+    await fetch(`${BASE_URL}/delete-event/${eventId}`, {
+      method: 'DELETE',
+    });
+  } catch (e) {
+    console.error('deleteEvent error:', e);
   }
 };
 
@@ -69,12 +87,24 @@ export const sendEmail = async (to, subject, body) => {
   }
 };
 
-export const getCalendarEvents = async () => {
+export const getTimerState = async () => {
   try {
-    const res = await fetch(`${BASE_URL}/events`);
-    return await res.json(); // [{ date: ..., type: ... }, ...]
+    const res = await fetch(`${BASE_URL}/timer-state`);
+    return await res.json();
   } catch (e) {
-    console.error('getCalendarEvents error:', e);
-    return [];
+    console.error('getTimerState error:', e);
+    return null;
+  }
+};
+
+export const updateTimerState = async (data) => {
+  try {
+    await fetch(`${BASE_URL}/update-timer-state`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  } catch (e) {
+    console.error('updateTimerState error:', e);
   }
 };
